@@ -13,16 +13,15 @@ def unique_in_square(board, cell):
     return square.count(cell) < 2
 
 
-class RuleHolder(object):
+class RulesHolder(object):
     default_rules = [unique_in_row, unique_in_column, unique_in_square]
 
-    def __init__(self, board, rules=None):
-        self.board = board
+    def __init__(self, rules=None):
         self.rules = []
         self.rules += self.default_rules if rules is None else rules
 
     def add_rule(self, rule):
         self.rules.append(rule)
 
-    def is_valid(self, cell):
-        return all(rule(self.board, cell) for rule in self.rules)
+    def is_valid(self, board, cell):
+        return all(rule(board, cell) for rule in self.rules)

@@ -1,6 +1,6 @@
 from unittest import TestCase
 from sudoku.board import Cell, Board
-from sudoku.rules import (RuleHolder, unique_in_row,
+from sudoku.rules import (RulesHolder, unique_in_row,
                           unique_in_column, unique_in_square)
 from sudoku.solver import Solver, NoSolutionError
 
@@ -128,21 +128,21 @@ class TestRuleHolder(TestCase):
             4, 3, 4, 3,
         ]
         self.board = Board(self.matrix)
-        self.rule_holder = RuleHolder(self.board)
+        self.rules_holder = RulesHolder()
 
-    def test_rule_holder(self):
+    def test_rules_holder(self):
         cell = self.board.get_cell(1, 1)
-        assert self.rule_holder.is_valid(cell)
+        assert self.rules_holder.is_valid(self.board, cell)
         cell = self.board.get_cell(1, 2)
-        assert self.rule_holder.is_valid(cell)
+        assert self.rules_holder.is_valid(self.board, cell)
         cell = self.board.get_cell(2, 3)
-        assert not self.rule_holder.is_valid(cell)
+        assert not self.rules_holder.is_valid(self.board, cell)
 
 
 class TestSolver(TestCase):
     def init_solver(self, matrix):
         self.board = Board(matrix)
-        self.rules_holder = RuleHolder(self.board)
+        self.rules_holder = RulesHolder()
         self.solver = Solver(self.board, self.rules_holder)
 
     def make_matrix(self, matrix):

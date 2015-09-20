@@ -31,7 +31,7 @@ class Solver(object):
                 # try candidates and remove the bad ones
                 for candidate in cell.candidates:
                     cell.value = candidate
-                    if not self.rules_holder.is_valid(cell):
+                    if not self.rules_holder.is_valid(self.board, cell):
                         bad_candidates.add(candidate)
                     cell.value = 0
                 cell.candidates -= bad_candidates
