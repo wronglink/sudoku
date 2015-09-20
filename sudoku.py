@@ -86,8 +86,7 @@ class Board(object):
 
     def get_square(self, x, y):
         """
-        Retunes n-th square.
-        x and y are the coordinates of square.
+        Returns square by its x, y coordinates inside board.
         ┌─────┬─────┐
         │ 0,0 │ 1,0 │
         ├─────┼─────┤
@@ -102,6 +101,13 @@ class Board(object):
             square += self.matrix[offset:offset + self.square_size]
             offset += self.size
         return square
+
+    def get_square_by_cell(self, x, y):
+        """
+        Returns square containing cell with x, y coordinates.
+        """
+        return self.get_square(x // self.square_size, y // self.square_size)
+
 
     def display(self):
         """

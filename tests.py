@@ -15,7 +15,6 @@ class TestBoard(TestCase):
             0, 0, 1,  0, 0, 0,  0, 0, 3,
             3, 0, 0,  0, 0, 0,  0, 0, 2,
         ]
-
         self.board = Board(self.matrix)
 
     def test_slicing(self):
@@ -28,24 +27,36 @@ class TestBoard(TestCase):
         assert 2 == self.board[8:8]
 
     def test_columns(self):
-        column = [9, 0, 0, 0, 0, 7, 0, 0, 3]
+        column0 = [9, 0, 0, 0, 0, 7, 0, 0, 3]
         columns = list(self.board.columns)
         assert 9 == len(columns)
-        assert column == columns[0]
+        assert column0 == columns[0]
 
     def test_rows(self):
-        row = [9, 0, 0, 0, 8, 0, 3, 0, 0]
+        row0 = [9, 0, 0, 0, 8, 0, 3, 0, 0]
         rows = list(self.board.rows)
         assert 9 == len(rows)
-        assert row == rows[0]
+        assert row0 == rows[0]
 
     def test_squares(self):
-        square = [9, 0, 0,
-                  0, 0, 0,
-                  0, 2, 0]
+        square00 = [9, 0, 0,
+                    0, 0, 0,
+                    0, 2, 0]
         squares = list(self.board.squares)
         assert 9 == len(squares)
-        assert square == squares[0]
+        assert square00 == squares[0]
+
+    def get_square_by_cell(self):
+        square00 = [9, 0, 0,
+                    0, 0, 0,
+                    0, 2, 0]
+
+        square22 = [8, 0, 3,
+                    0, 0, 0,
+                    0, 0, 0]
+
+        assert square00 == self.board.get_square_by_cell(2, 2)
+        assert square22 == self.board.get_square_by_cell(7, 8)
 
 
     def test_display(self):
