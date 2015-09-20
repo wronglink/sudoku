@@ -1,7 +1,7 @@
 from unittest import TestCase
-from .sudoku import Board
-from .rules import (RuleHolder, unique_in_row,
-                    unique_in_column, unique_in_square)
+from sudoku.board import Board
+from sudoku.rules import (RuleHolder, unique_in_row,
+                          unique_in_column, unique_in_square)
 
 
 class TestBoard(TestCase):

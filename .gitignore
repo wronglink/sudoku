@@ -1,2 +1,5 @@
 *.py[cod]
 .cache
+.coverage
+*.egg
+*.egg-info
