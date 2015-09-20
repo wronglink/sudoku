@@ -102,3 +102,36 @@ class Board(object):
             square += self.matrix[offset:offset + self.square_size]
             offset += self.size
         return square
+
+    def display(self):
+        """
+        Draws a border around squares and creates table that looks like:
+        ┌────┬────┐
+        │ 9_ │ 3_ │
+        │ _2 │ _4 │
+        ├────┼────┤
+        │ __ │ 9_ │
+        │ 3_ │ _2 │
+        └────┴────┘
+        """
+        output = []
+
+        borders = ['─' * (self.square_size + 2)] * self.square_size
+        header = '┌{}┐'.format('┬'.join(borders))
+        middler = '├{}┤'.format('┼'.join(borders))
+        footer = '└{}┘'.format('┴'.join(borders))
+
+        output.append(header)
+        for y, row in enumerate(self.rows):
+            line = []
+            for x, num in enumerate(row):
+                line += str(num) if num > 0 else '_'
+                if (x + 1) % self.square_size == 0 and 1 < x + 1 < self.size:
+                    line.append(' │ ')
+            line = '│ {} │'.format(''.join(line))
+            output.append(line)
+            if (y + 1) % self.square_size == 0 and 1 < y + 1 < self.size:
+                output.append(middler)
+
+        output.append(footer)
+        return '\n'.join(output)

@@ -46,3 +46,21 @@ class TestBoard(TestCase):
         squares = list(self.board.squares)
         assert 9 == len(squares)
         assert square == squares[0]
+
+
+    def test_display(self):
+        expected = """\
+┌─────┬─────┬─────┐
+│ 9__ │ _8_ │ 3__ │
+│ ___ │ 25_ │ 7__ │
+│ _2_ │ 3__ │ __4 │
+├─────┼─────┼─────┤
+│ _94 │ ___ │ ___ │
+│ ___ │ 73_ │ 56_ │
+│ 7_5 │ _6_ │ 4__ │
+├─────┼─────┼─────┤
+│ __7 │ 8_3 │ 9__ │
+│ __1 │ ___ │ __3 │
+│ 3__ │ ___ │ __2 │
+└─────┴─────┴─────┘"""
+        assert expected == self.board.display()
