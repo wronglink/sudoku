@@ -2,6 +2,7 @@ from unittest import TestCase
 from sudoku.board import Cell, Board
 from sudoku.rules import (RuleHolder, unique_in_row,
                           unique_in_column, unique_in_square)
+from sudoku.solver import Solver, NoSolutionError
 
 
 class TestCell(TestCase):
@@ -136,3 +137,85 @@ class TestRuleHolder(TestCase):
         assert self.rule_holder.is_valid(cell)
         cell = self.board.get_cell(2, 3)
         assert not self.rule_holder.is_valid(cell)
+
+
+class TestSolver(TestCase):
+    def init_solver(self, matrix):
+        self.board = Board(matrix)
+        self.rules_holder = RuleHolder(self.board)
+        self.solver = Solver(self.board, self.rules_holder)
+
+    def make_matrix(self, matrix):
+        return [int(i) for i in matrix.replace('_', '0').split()]
+
+    def test_reduce_candidates(self):
+        matrix = self.make_matrix('''
+            3 4 1 2
+            _ 2 3 _
+            _ 3 _ _
+            _ _ 4 3''')
+        self.init_solver(matrix)
+        assert self.solver.reduce_candidates()
+        cell = self.board.get_cell(0, 1)
+        assert 1 == cell
+        assert set() == cell.candidates
+        cell = self.board.get_cell(0, 2)
+        assert 0 == cell
+        assert {2, 4} == cell.candidates
+
+    def test_reduce_candidates_raises_no_solution(self):
+        matrix = self.make_matrix('''
+            3 4 1 2
+            _ 2 3 4
+            2 4 2 4
+            1 3 4 3''')
+        self.init_solver(matrix)
+        self.assertRaises(NoSolutionError, self.solver.reduce_candidates)
+
+    def test_solved(self):
+        matrix = self.make_matrix('''
+            3 4 1 2
+            1 2 3 4
+            4 3 2 1
+            2 1 4 3''')
+        self.init_solver(matrix)
+        assert self.solver.solved()
+        matrix = self.make_matrix('''
+            _ 4 1 2
+            1 2 3 4
+            4 3 2 1
+            2 1 4 3''')
+        self.init_solver(matrix)
+        assert not self.solver.solved()
+
+    def test_solve_simple_one_cycle(self):
+        matrix = self.make_matrix('''
+            3 4 1 2
+            _ 2 3 _
+            _ 3 2 1
+            2 1 4 3''')
+        solution = self.make_matrix('''
+            3 4 1 2
+            1 2 3 4
+            4 3 2 1
+            2 1 4 3''')
+        self.init_solver(matrix)
+        solved_board = self.solver.solve()
+        assert self.solver.solved()
+        assert solution == solved_board.matrix
+
+    def test_solve_simple_two_cycles(self):
+        matrix = self.make_matrix('''
+            _ 4 _ 2
+            _ 2 3 _
+            _ 3 2 1
+            2 1 4 3''')
+        solution = self.make_matrix('''
+            3 4 1 2
+            1 2 3 4
+            4 3 2 1
+            2 1 4 3''')
+        self.init_solver(matrix)
+        solved_board = self.solver.solve()
+        assert self.solver.solved()
+        assert solution == solved_board.matrix
