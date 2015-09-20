@@ -1,19 +1,16 @@
-def unique_in_row(board, x, y):
-    value = board.get_cell(x, y)
-    row = board.get_row(y)
-    return row.count(value) < 2
+def unique_in_row(board, cell):
+    row = board.get_row(cell.y)
+    return row.count(cell) < 2
 
 
-def unique_in_column(board, x, y):
-    value = board.get_cell(x, y)
-    column = board.get_column(x)
-    return column.count(value) < 2
+def unique_in_column(board, cell):
+    column = board.get_column(cell.x)
+    return column.count(cell) < 2
 
 
-def unique_in_square(board, x, y):
-    value = board.get_cell(x, y)
-    square = board.get_square_by_cell(x, y)
-    return square.count(value) < 2
+def unique_in_square(board, cell):
+    square = board.get_square_by_cell(cell.x, cell.y)
+    return square.count(cell) < 2
 
 
 class RuleHolder(object):
@@ -27,5 +24,5 @@ class RuleHolder(object):
     def add_rule(self, rule):
         self.rules.append(rule)
 
-    def is_valid(self, x, y):
-        return all(rule(self.board, x, y) for rule in self.rules)
+    def is_valid(self, cell):
+        return all(rule(self.board, cell) for rule in self.rules)

@@ -9,9 +9,37 @@ Y, rows
 """
 
 
+class Cell(object):
+    def __init__(self, value, x, y, size):
+        self.value = value
+        self.x = x
+        self.y = y
+        self.candidates = set(range(1, size + 1)) if self.value == 0 else set()
+
+    def __eq__(self, other):
+        return self.value == other
+
+    def __lt__(self, other):
+        return self.value < other
+
+    def __gt__(self, other):
+        return self.value > other
+
+    def __str__(self):
+        return str(self.value)
+
+    def __repr__(self):
+        return "<Cell: {} [{}, {}]>".format(self.value, self.x, self.y)
+
+
 class Board(object):
     def __init__(self, matrix):
-        self.matrix = matrix
+        size = int(len(matrix) ** 0.5)
+        self.matrix = [
+            Cell(matrix[x + y * size], x, y, size)
+            for y in range(size)
+            for x in range(size)
+        ]
 
     def __iter__(self):
         return iter(self.matrix)
@@ -26,7 +54,7 @@ class Board(object):
 
     def get_cell(self, x, y):
         """
-        Returns cell value by x, y board coordinates.
+        Returns cell by x, y board coordinates.
         """
         return self.matrix[self.size * y + x]
 

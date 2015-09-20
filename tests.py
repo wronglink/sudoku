@@ -1,7 +1,15 @@
 from unittest import TestCase
-from sudoku.board import Board
+from sudoku.board import Cell, Board
 from sudoku.rules import (RuleHolder, unique_in_row,
                           unique_in_column, unique_in_square)
+
+
+class TestCell(TestCase):
+    def test_cell(self):
+        assert 1 == Cell(1, 0, 5, 9)
+        assert 1 != Cell(2, 0, 5, 9)
+        assert Cell(2, 0, 5, 9) == Cell(2, 2, 5, 9)
+        assert Cell(1, 0, 5, 9) != Cell(2, 2, 5, 9)
 
 
 class TestBoard(TestCase):
@@ -92,16 +100,22 @@ class TestRules(TestCase):
         self.board = Board(self.matrix)
 
     def test_unique_in_row(self):
-        assert unique_in_row(self.board, 1, 0)
-        assert not unique_in_row(self.board, 1, 3)
+        cell = self.board.get_cell(1, 0)
+        assert unique_in_row(self.board, cell)
+        cell = self.board.get_cell(1, 3)
+        assert not unique_in_row(self.board, cell)
 
     def test_unique_in_column(self):
-        assert unique_in_column(self.board, 0, 1)
-        assert not unique_in_column(self.board, 3, 0)
+        cell = self.board.get_cell(0, 1)
+        assert unique_in_column(self.board, cell)
+        cell = self.board.get_cell(3, 0)
+        assert not unique_in_column(self.board, cell)
 
     def test_unique_in_square(self):
-        assert unique_in_square(self.board, 1, 1)
-        assert not unique_in_square(self.board, 0, 3)
+        cell = self.board.get_cell(1, 1)
+        assert unique_in_square(self.board, cell)
+        cell = self.board.get_cell(0, 3)
+        assert not unique_in_square(self.board, cell)
 
 
 class TestRuleHolder(TestCase):
@@ -116,6 +130,9 @@ class TestRuleHolder(TestCase):
         self.rule_holder = RuleHolder(self.board)
 
     def test_rule_holder(self):
-        assert self.rule_holder.is_valid(1, 1)
-        assert self.rule_holder.is_valid(1, 2)
-        assert not self.rule_holder.is_valid(2, 3)
+        cell = self.board.get_cell(1, 1)
+        assert self.rule_holder.is_valid(cell)
+        cell = self.board.get_cell(1, 2)
+        assert self.rule_holder.is_valid(cell)
+        cell = self.board.get_cell(2, 3)
+        assert not self.rule_holder.is_valid(cell)
