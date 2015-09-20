@@ -16,25 +16,6 @@ class Board(object):
     def __iter__(self):
         return iter(self.matrix)
 
-    def __getitem__(self, key):
-        """
-        """
-        if isinstance(key, slice):
-            # [:]
-            if key.start is None and key.stop is None:
-                raise ValueError('Either collumn or row must be specified')
-            # [x:y]
-            if key.start is not None and key.stop is not None:
-                return self.get_cell(key.start, key.stop)
-            # [column:]
-            elif key.start is not None:
-                return self.get_column(key.start)
-            # [:row]
-            elif key.stop is not None:
-                return self.get_row(key.stop)
-        else:
-            return self.matrix[key]
-
     @property
     def size(self):
         return int(len(self.matrix) ** 0.5)

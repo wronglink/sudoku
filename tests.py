@@ -18,27 +18,29 @@ class TestBoard(TestCase):
             3, 0, 0,  0, 0, 0,  0, 0, 2,
         ]
         self.board = Board(self.matrix)
+        self.row0 = [9, 0, 0, 0, 8, 0, 3, 0, 0]
+        self.column0 = [9, 0, 0, 0, 0, 7, 0, 0, 3]
 
-    def test_slicing(self):
-        column = [9, 0, 0, 0, 0, 7, 0, 0, 3]
-        row = [9, 0, 0, 0, 8, 0, 3, 0, 0]
-        assert column == self.board[0:]
-        assert row == self.board[:0]
-        assert 9 == self.board[0:0]
-        assert 3 == self.board[0:8]
-        assert 2 == self.board[8:8]
+    def test_get_cell(self):
+        assert 9 == self.board.get_cell(0, 0)
+        assert 3 == self.board.get_cell(0, 8)
+        assert 2 == self.board.get_cell(8, 8)
+
+    def test_get_column(self):
+        assert self.column0 == self.board.get_column(0)
 
     def test_columns(self):
-        column0 = [9, 0, 0, 0, 0, 7, 0, 0, 3]
         columns = list(self.board.columns)
         assert 9 == len(columns)
-        assert column0 == columns[0]
+        assert self.column0 == columns[0]
+
+    def test_get_row(self):
+        assert self.row0 == self.board.get_row(0)
 
     def test_rows(self):
-        row0 = [9, 0, 0, 0, 8, 0, 3, 0, 0]
         rows = list(self.board.rows)
         assert 9 == len(rows)
-        assert row0 == rows[0]
+        assert self.row0 == rows[0]
 
     def test_squares(self):
         square00 = [9, 0, 0,
@@ -91,17 +93,14 @@ class TestRules(TestCase):
 
     def test_unique_in_row(self):
         assert unique_in_row(self.board, 1, 0)
-        # assert unique_in_row(self.board, 2, 1)
         assert not unique_in_row(self.board, 1, 3)
 
     def test_unique_in_column(self):
         assert unique_in_column(self.board, 0, 1)
-        # assert unique_in_column(self.board, 2, 1)
         assert not unique_in_column(self.board, 3, 0)
 
     def test_unique_in_square(self):
         assert unique_in_square(self.board, 1, 1)
-        # assert unique_in_square(self.board, 2, 0)
         assert not unique_in_square(self.board, 0, 3)
 
 
