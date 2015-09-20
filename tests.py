@@ -1,5 +1,7 @@
 from unittest import TestCase
 from .sudoku import Board
+from .rules import (RuleHolder, unique_in_row,
+                    unique_in_column, unique_in_square)
 
 
 class TestBoard(TestCase):
@@ -75,3 +77,46 @@ class TestBoard(TestCase):
 │ 3__ │ ___ │ __2 │
 └─────┴─────┴─────┘"""
         assert expected == self.board.display()
+
+
+class TestRules(TestCase):
+    def setUp(self):
+        self.matrix = [
+            1, 2, 0, 4,
+            3, 4, 0, 0,
+            2, 1, 0, 4,
+            4, 4, 1, 3,
+        ]
+        self.board = Board(self.matrix)
+
+    def test_unique_in_row(self):
+        assert unique_in_row(self.board, 1, 0)
+        # assert unique_in_row(self.board, 2, 1)
+        assert not unique_in_row(self.board, 1, 3)
+
+    def test_unique_in_column(self):
+        assert unique_in_column(self.board, 0, 1)
+        # assert unique_in_column(self.board, 2, 1)
+        assert not unique_in_column(self.board, 3, 0)
+
+    def test_unique_in_square(self):
+        assert unique_in_square(self.board, 1, 1)
+        # assert unique_in_square(self.board, 2, 0)
+        assert not unique_in_square(self.board, 0, 3)
+
+
+class TestRuleHolder(TestCase):
+    def setUp(self):
+        self.matrix = [
+            1, 2, 0, 4,
+            3, 4, 0, 0,
+            2, 1, 0, 4,
+            4, 3, 4, 3,
+        ]
+        self.board = Board(self.matrix)
+        self.rule_holder = RuleHolder(self.board)
+
+    def test_rule_holder(self):
+        assert self.rule_holder.is_valid(1, 1)
+        assert self.rule_holder.is_valid(1, 2)
+        assert not self.rule_holder.is_valid(2, 3)
