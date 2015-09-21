@@ -1,5 +1,6 @@
 from unittest import TestCase
 from sudoku.board import Cell, Board
+from sudoku.parsers import TextParser, JSONParser
 from sudoku.rules import (RuleHandler, unique_in_row,
                           unique_in_column, unique_in_square)
 from sudoku.solver import BacktrackingSolver, NoSolutionError
@@ -300,3 +301,77 @@ class TestBacktrackingSolver(TestCase):
         self.init_solver(matrix)
         self.solver.solve()
         assert self.solver.solved()
+
+
+class TestTextParser(TestCase):
+    def setUp(self):
+        self.parser = TextParser()
+
+    def test_loads(self):
+        matrix_string = '''
+            3 1  4 2
+            4 _  * 1
+
+            1 _  2 4
+            2 4  . 3
+        '''
+        matrix_expected = [
+            3, 1, 4, 2,
+            4, 0, 0, 1,
+            1, 0, 2, 4,
+            2, 4, 0, 3,
+        ]
+        board = self.parser.loads(matrix_string)
+        assert matrix_expected == board.matrix
+
+    def test_dumps(self):
+        matrix_string = '''\
+31 42
+4_ _1
+
+1_ 24
+24 _3'''
+        matrix = [
+            3, 1, 4, 2,
+            4, 0, 0, 1,
+            1, 0, 2, 4,
+            2, 4, 0, 3,
+        ]
+        board = Board(matrix)
+        dump = self.parser.dumps(board)
+        assert matrix_string == dump
+
+
+class TestJSONParser(TestCase):
+    def setUp(self):
+        self.parser = JSONParser()
+
+    def test_loads(self):
+        matrix_string = '''\
+[
+    [3, 1, 4, 2],
+    [4, 0, 0, 1],
+    [1, 0, 2, 4],
+    [2, 4, 0, 3]
+]'''
+        matrix_expected = [
+            3, 1, 4, 2,
+            4, 0, 0, 1,
+            1, 0, 2, 4,
+            2, 4, 0, 3,
+        ]
+        board = self.parser.loads(matrix_string)
+        assert matrix_expected == board.matrix
+
+    def test_dumps(self):
+        matrix_string = ('[[3, 1, 4, 2], [4, 0, 0, 1], '
+                         '[1, 0, 2, 4], [2, 4, 0, 3]]')
+        matrix = [
+            3, 1, 4, 2,
+            4, 0, 0, 1,
+            1, 0, 2, 4,
+            2, 4, 0, 3,
+        ]
+        board = Board(matrix)
+        dump = self.parser.dumps(board)
+        assert matrix_string == dump
