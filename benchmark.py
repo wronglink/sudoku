@@ -9,8 +9,8 @@ py.test -v benchmark.py
 
 import pytest
 from sudoku.board import Board
-from sudoku.rules import RulesHolder
-from sudoku.solver import Solver
+from sudoku.rules import RuleHandler
+from sudoku.solver import BacktrackingSolver
 
 
 matrixes = []
@@ -28,8 +28,8 @@ def matrix(request):
 @pytest.fixture
 def solver(matrix):
     board = Board(matrix)
-    rules_holder = RulesHolder()
-    return Solver(board, rules_holder)
+    rule_handler = RuleHandler()
+    return BacktrackingSolver(board, rule_handler)
 
 
 @pytest.mark.benchmark

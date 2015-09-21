@@ -1,8 +1,8 @@
 from unittest import TestCase
 from sudoku.board import Cell, Board
-from sudoku.rules import (RulesHolder, unique_in_row,
+from sudoku.rules import (RuleHandler, unique_in_row,
                           unique_in_column, unique_in_square)
-from sudoku.solver import Solver, NoSolutionError
+from sudoku.solver import BacktrackingSolver, NoSolutionError
 
 
 class TestCell(TestCase):
@@ -128,38 +128,25 @@ class TestRuleHolder(TestCase):
             4, 3, 4, 3,
         ]
         self.board = Board(self.matrix)
-        self.rules_holder = RulesHolder()
+        self.rule_handler = RuleHandler()
 
-    def test_rules_holder(self):
+    def test_rule_handler(self):
         cell = self.board.get_cell(1, 1)
-        assert self.rules_holder.is_valid(self.board, cell)
+        assert self.rule_handler.is_valid(self.board, cell)
         cell = self.board.get_cell(1, 2)
-        assert self.rules_holder.is_valid(self.board, cell)
+        assert self.rule_handler.is_valid(self.board, cell)
         cell = self.board.get_cell(2, 3)
-        assert not self.rules_holder.is_valid(self.board, cell)
+        assert not self.rule_handler.is_valid(self.board, cell)
 
 
-class TestSolver(TestCase):
+class TestBacktrackingSolver(TestCase):
     def init_solver(self, matrix):
         self.board = Board(matrix)
-        self.rules_holder = RulesHolder()
-        self.solver = Solver(self.board, self.rules_holder)
+        self.rule_handler = RuleHandler()
+        self.solver = BacktrackingSolver(self.board, self.rule_handler)
 
     def make_matrix(self, matrix):
         return [int(i) for i in matrix.replace('_', '0').split()]
-
-    def test_reset_candidates(self):
-        matrix = self.make_matrix('''
-            3 4 1 2
-            _ 2 _ 4
-            _ _ _ 1
-            2 1 4 _''')
-        self.init_solver(matrix)
-        self.solver.reset_candidates()
-        cell = self.board.get_cell(0, 1)
-        assert {1, 2, 3, 4} == cell.candidates
-        cell = self.board.get_cell(2, 2)
-        assert {1, 2, 3, 4} == cell.candidates
 
     def test_reset_candidates(self):
         matrix = self.make_matrix('''
@@ -187,7 +174,7 @@ class TestSolver(TestCase):
         assert 1 == cell
         assert set() == cell.candidates
         cell = self.board.get_cell(0, 2)
-        assert 0 == cell
+        assert cell.is_empty
         assert {2, 4} == cell.candidates
 
     def test_cant_reduce_candidates(self):

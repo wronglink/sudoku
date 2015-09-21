@@ -37,6 +37,10 @@ class Cell(object):
     def __repr__(self):
         return "<Cell: {} [{}, {}]>".format(self.value, self.x, self.y)
 
+    @property
+    def is_empty(self):
+        return self.value == 0
+
 
 class Board(object):
     def __init__(self, matrix):
@@ -122,7 +126,6 @@ class Board(object):
         Returns square containing cell with x, y coordinates.
         """
         return self.get_square(x // self.square_size, y // self.square_size)
-
 
     def display(self):
         """
