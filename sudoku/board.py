@@ -10,11 +10,17 @@ Y, rows
 
 
 class Cell(object):
-    def __init__(self, value, x, y, size):
+    __slots__ = ['value', 'x', 'y', 'candidates', 'id']
+
+    def __init__(self, value, x, y, id):
         self.value = value
         self.x = x
         self.y = y
-        self.candidates = set(range(1, size + 1)) if self.value == 0 else set()
+        self.id = id
+        self.candidates = set()
+
+    def __hash__(self):
+        return hash(self.id)
 
     def __eq__(self, other):
         return self.value == other
@@ -36,7 +42,7 @@ class Board(object):
     def __init__(self, matrix):
         size = int(len(matrix) ** 0.5)
         self.matrix = [
-            Cell(matrix[x + y * size], x, y, size)
+            Cell(matrix[x + y * size], x, y, x + y * size)
             for y in range(size)
             for x in range(size)
         ]

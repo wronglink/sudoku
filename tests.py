@@ -148,6 +148,32 @@ class TestSolver(TestCase):
     def make_matrix(self, matrix):
         return [int(i) for i in matrix.replace('_', '0').split()]
 
+    def test_reset_candidates(self):
+        matrix = self.make_matrix('''
+            3 4 1 2
+            _ 2 _ 4
+            _ _ _ 1
+            2 1 4 _''')
+        self.init_solver(matrix)
+        self.solver.reset_candidates()
+        cell = self.board.get_cell(0, 1)
+        assert {1, 2, 3, 4} == cell.candidates
+        cell = self.board.get_cell(2, 2)
+        assert {1, 2, 3, 4} == cell.candidates
+
+    def test_reset_candidates(self):
+        matrix = self.make_matrix('''
+            3 4 1 2
+            _ 2 _ 4
+            _ _ _ 1
+            2 1 4 _''')
+        self.init_solver(matrix)
+        self.solver.reset_candidates()
+        cell = self.board.get_cell(0, 1)
+        assert {1, 2, 3, 4} == cell.candidates
+        cell = self.board.get_cell(2, 2)
+        assert {1, 2, 3, 4} == cell.candidates
+
     def test_reduce_candidates(self):
         matrix = self.make_matrix('''
             3 4 1 2
@@ -155,6 +181,7 @@ class TestSolver(TestCase):
             _ 3 _ _
             _ _ 4 3''')
         self.init_solver(matrix)
+        self.solver.reset_candidates()
         assert self.solver.reduce_candidates()
         cell = self.board.get_cell(0, 1)
         assert 1 == cell
@@ -163,6 +190,23 @@ class TestSolver(TestCase):
         assert 0 == cell
         assert {2, 4} == cell.candidates
 
+    def test_cant_reduce_candidates(self):
+        matrix = self.make_matrix('''
+            3 _ _ 2
+            _ 2 3 _
+            _ 3 2 _
+            2 _ _ 3''')
+        expected = self.make_matrix('''
+            3 _ _ 2
+            _ 2 3 _
+            _ 3 2 _
+            2 _ _ 3''')
+        self.init_solver(matrix)
+        self.solver.reset_candidates()
+        assert not self.solver.reduce_candidates()
+        assert expected == self.solver.board.matrix
+
+
     def test_reduce_candidates_raises_no_solution(self):
         matrix = self.make_matrix('''
             3 4 1 2
@@ -170,6 +214,7 @@ class TestSolver(TestCase):
             2 4 2 4
             1 3 4 3''')
         self.init_solver(matrix)
+        self.solver.reset_candidates()
         self.assertRaises(NoSolutionError, self.solver.reduce_candidates)
 
     def test_solved(self):
@@ -219,3 +264,52 @@ class TestSolver(TestCase):
         solved_board = self.solver.solve()
         assert self.solver.solved()
         assert solution == solved_board.matrix
+
+    def test_solve_with_iteration(self):
+        matrix = self.make_matrix('''
+            3 _ _ 2
+            _ 2 3 _
+            _ 3 2 _
+            2 _ _ 3''')
+        solution1 = self.make_matrix('''
+            3 4 1 2
+            1 2 3 4
+            4 3 2 1
+            2 1 4 3''')
+        solution2 = self.make_matrix('''
+            3 1 4 2
+            4 2 3 1
+            1 3 2 4
+            2 4 1 3''')
+
+        self.init_solver(matrix)
+        solved_board = self.solver.solve()
+        assert self.solver.solved()
+        assert solved_board.matrix in [solution1, solution2]
+
+    def test_solve_many_iterations(self):
+        matrix = self.make_matrix('''
+            3 _ _ _
+            _ _ _ _
+            _ _ _ _
+            _ _ _ 3''')
+
+        self.init_solver(matrix)
+        self.solver.solve()
+        assert self.solver.solved()
+
+    def test_solve_many_iterations3x3(self):
+        matrix = self.make_matrix('''
+            3 _ _ _ _ _ _ _ _
+            _ _ _ _ _ _ _ _ _
+            _ _ _ _ _ _ _ _ _
+            _ _ _ _ _ _ _ _ _
+            _ _ _ _ _ _ _ _ _
+            _ _ _ _ _ _ _ _ _
+            _ _ _ _ _ _ _ _ _
+            _ _ _ _ _ _ _ _ _
+            _ _ _ _ _ _ _ _ 3''')
+
+        self.init_solver(matrix)
+        self.solver.solve()
+        assert self.solver.solved()
