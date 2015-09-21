@@ -93,3 +93,9 @@ class JSONParser(BaseParser):
     def dumps(self, board):
         output = [[cell.value for cell in row] for row in board.rows]
         return json.dumps(output)
+
+
+PARSER_FILE_EXT_MAPPING = {
+    '.json': JSONParser,
+    '.txt': TextParser,
+}
