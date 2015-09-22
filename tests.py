@@ -1,6 +1,6 @@
 from unittest import TestCase
 from sudoku.board import Cell, Board
-from sudoku.parsers import TextParser, JSONParser
+from sudoku.parsers import TextParser, JSONParser, ParseError
 from sudoku.rules import (RuleHandler, unique_in_row,
                           unique_in_column, unique_in_square)
 from sudoku.solver import BacktrackingSolver, NoSolutionError
@@ -323,6 +323,20 @@ class TestTextParser(TestCase):
         ]
         board = self.parser.loads(matrix_string)
         assert matrix_expected == board.matrix
+
+    def test_loads_wrong_size_exception(self):
+        matrix_string = '3 1  4 2 4 _  * 1'
+        self.assertRaises(ParseError, self.parser.loads, matrix_string)
+
+    def test_loads_wrong_values_exception(self):
+        matrix_string = '''
+            3 6  4 7
+            4 _  * 1
+
+            1 _  2 4
+            2 5  . 3
+        '''
+        self.assertRaises(ParseError, self.parser.loads, matrix_string)
 
     def test_dumps(self):
         matrix_string = '''\

@@ -4,13 +4,33 @@ from itertools import chain
 from sudoku.board import Board
 
 
-class BaseParser(object):
-    def is_valid_matrix(self, matrix):
-        pass
+class ParseError(Exception):
+    """
+    Error that could be raised if file parsing goes wrong.
+    """
+    pass
 
-    def is_valid_size(self, matrix):
-        size = len(matrix) ** 0.25
-        return int(size) == size
+
+class BaseParser(object):
+    def check_matrix(self, matrix):
+        self.check_size(matrix)
+        self.check_values(matrix)
+
+    def check_size(self, matrix):
+        square_size = len(matrix) ** 0.25
+        if not int(square_size) == square_size:
+            message = ('Matrix size must be a double perfect square,'
+                       ' {} got instead.').format(square_size)
+            raise ParseError(message)
+
+    def check_values(self, matrix):
+        size = int(len(matrix) ** 0.5)
+        numbers = list(range(0, size + 1))
+        for i, n in enumerate(matrix):
+            if n not in numbers:
+                message = ('Unexpected value {} on position {}. Expected value'
+                           ' in range(0, {})').format(n, i, size + 1)
+                raise ParseError(message)
 
     def get_board(self, matrix):
         return Board(matrix)
@@ -51,6 +71,7 @@ class TextParser(BaseParser):
         for char in string.whitespace:
             s = s.replace(char, '')
         matrix = [int(i) for i in s]
+        self.check_matrix(matrix)
         return self.get_board(matrix)
 
     def dumps(self, board):
@@ -88,6 +109,7 @@ class JSONParser(BaseParser):
     def loads(self, s):
         matrix = json.loads(s)
         matrix = list(chain(*matrix))
+        self.check_matrix(matrix)
         return self.get_board(matrix)
 
     def dumps(self, board):
