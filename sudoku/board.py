@@ -1,26 +1,13 @@
-"""
- 0 1 2 3
-┌──────► X, columns
-│
-│
-│
-▼
-Y, rows
-"""
-
-
 class Cell(object):
-    __slots__ = ['value', 'x', 'y', 'candidates', 'id']
+    __slots__ = ['value', 'x', 'y']
 
-    def __init__(self, value, x, y, id):
+    def __init__(self, value, x, y):
         self.value = value
         self.x = x
         self.y = y
-        self.id = id
-        self.candidates = set()
 
     def __hash__(self):
-        return hash(self.id)
+        return hash(self.coords)
 
     def __eq__(self, other):
         return self.value == other
@@ -38,6 +25,10 @@ class Cell(object):
         return "<Cell: {} [{}, {}]>".format(self.value, self.x, self.y)
 
     @property
+    def coords(self):
+        return self.x, self.y
+
+    @property
     def is_empty(self):
         return self.value == 0
 
@@ -46,13 +37,19 @@ class Board(object):
     def __init__(self, matrix):
         size = int(len(matrix) ** 0.5)
         self.matrix = [
-            Cell(matrix[x + y * size], x, y, x + y * size)
+            Cell(matrix[x + y * size], x, y)
             for y in range(size)
             for x in range(size)
         ]
 
     def __iter__(self):
         return iter(self.matrix)
+
+    def __getitem__(self, key):
+        if isinstance(key, slice):
+            return self.get_cell(key.start, key.stop)
+        else:
+            return self.matrix[key]
 
     @property
     def size(self):
@@ -127,35 +124,3 @@ class Board(object):
         """
         return self.get_square(x // self.square_size, y // self.square_size)
 
-    def display(self):
-        """
-        Draws a border around squares and creates table that looks like:
-        ┌────┬────┐
-        │ 9_ │ 3_ │
-        │ _2 │ _4 │
-        ├────┼────┤
-        │ __ │ 9_ │
-        │ 3_ │ _2 │
-        └────┴────┘
-        """
-        output = []
-
-        borders = ['─' * (self.square_size + 2)] * self.square_size
-        header = '┌{}┐'.format('┬'.join(borders))
-        middler = '├{}┤'.format('┼'.join(borders))
-        footer = '└{}┘'.format('┴'.join(borders))
-
-        output.append(header)
-        for y, row in enumerate(self.rows):
-            line = []
-            for x, num in enumerate(row):
-                line += str(num) if num > 0 else '_'
-                if (x + 1) % self.square_size == 0 and 1 < x + 1 < self.size:
-                    line.append(' │ ')
-            line = '│ {} │'.format(''.join(line))
-            output.append(line)
-            if (y + 1) % self.square_size == 0 and 1 < y + 1 < self.size:
-                output.append(middler)
-
-        output.append(footer)
-        return '\n'.join(output)

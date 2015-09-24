@@ -3,15 +3,15 @@ from sudoku.board import Cell, Board
 from sudoku.parsers import TextParser, JSONParser, ParseError
 from sudoku.rules import (RuleHandler, unique_in_row,
                           unique_in_column, unique_in_square)
-from sudoku.solver import BacktrackingSolver, NoSolutionError
+from sudoku.solvers import BacktrackingSolver
 
 
 class TestCell(TestCase):
     def test_cell(self):
-        assert 1 == Cell(1, 0, 5, 9)
-        assert 1 != Cell(2, 0, 5, 9)
-        assert Cell(2, 0, 5, 9) == Cell(2, 2, 5, 9)
-        assert Cell(1, 0, 5, 9) != Cell(2, 2, 5, 9)
+        assert 1 == Cell(1, 0, 5)
+        assert 1 != Cell(2, 0, 5)
+        assert Cell(2, 0, 5) == Cell(2, 2, 5)
+        assert Cell(1, 0, 5) != Cell(2, 2, 5)
 
 
 class TestBoard(TestCase):
@@ -73,23 +73,6 @@ class TestBoard(TestCase):
         assert square22 == self.board.get_square_by_cell(7, 8)
 
 
-    def test_display(self):
-        expected = """\
-┌─────┬─────┬─────┐
-│ 9__ │ _8_ │ 3__ │
-│ ___ │ 25_ │ 7__ │
-│ _2_ │ 3__ │ __4 │
-├─────┼─────┼─────┤
-│ _94 │ ___ │ ___ │
-│ ___ │ 73_ │ 56_ │
-│ 7_5 │ _6_ │ 4__ │
-├─────┼─────┼─────┤
-│ __7 │ 8_3 │ 9__ │
-│ __1 │ ___ │ __3 │
-│ 3__ │ ___ │ __2 │
-└─────┴─────┴─────┘"""
-        assert expected == self.board.display()
-
 
 class TestRules(TestCase):
     def setUp(self):
@@ -120,7 +103,7 @@ class TestRules(TestCase):
         assert not unique_in_square(self.board, cell)
 
 
-class TestRuleHolder(TestCase):
+class TestRulesHandler(TestCase):
     def setUp(self):
         self.matrix = [
             1, 2, 0, 4,
@@ -129,38 +112,29 @@ class TestRuleHolder(TestCase):
             4, 3, 4, 3,
         ]
         self.board = Board(self.matrix)
-        self.rule_handler = RuleHandler()
+        self.rules = RuleHandler()
 
-    def test_rule_handler(self):
+    def test_rules(self):
         cell = self.board.get_cell(1, 1)
-        assert self.rule_handler.is_valid(self.board, cell)
+        assert self.rules.is_valid(self.board, cell)
         cell = self.board.get_cell(1, 2)
-        assert self.rule_handler.is_valid(self.board, cell)
+        assert self.rules.is_valid(self.board, cell)
         cell = self.board.get_cell(2, 3)
-        assert not self.rule_handler.is_valid(self.board, cell)
+        assert not self.rules.is_valid(self.board, cell)
+
+
+def is_solved(board):
+    return all(not cell.is_empty for cell in board)
 
 
 class TestBacktrackingSolver(TestCase):
     def init_solver(self, matrix):
-        self.board = Board(matrix)
-        self.rule_handler = RuleHandler()
-        self.solver = BacktrackingSolver(self.board, self.rule_handler)
+        self.puzzle = Board(matrix)
+        self.rules = RuleHandler()
+        self.solver = BacktrackingSolver(self.rules)
 
     def make_matrix(self, matrix):
         return [int(i) for i in matrix.replace('_', '0').split()]
-
-    def test_reset_candidates(self):
-        matrix = self.make_matrix('''
-            3 4 1 2
-            _ 2 _ 4
-            _ _ _ 1
-            2 1 4 _''')
-        self.init_solver(matrix)
-        self.solver.reset_candidates()
-        cell = self.board.get_cell(0, 1)
-        assert {1, 2, 3, 4} == cell.candidates
-        cell = self.board.get_cell(2, 2)
-        assert {1, 2, 3, 4} == cell.candidates
 
     def test_reduce_candidates(self):
         matrix = self.make_matrix('''
@@ -169,57 +143,11 @@ class TestBacktrackingSolver(TestCase):
             _ 3 _ _
             _ _ 4 3''')
         self.init_solver(matrix)
-        self.solver.reset_candidates()
-        assert self.solver.reduce_candidates()
-        cell = self.board.get_cell(0, 1)
+        solution = next(self.solver.solve(self.puzzle))
+        cell = solution.get_cell(0, 1)
         assert 1 == cell
-        assert set() == cell.candidates
-        cell = self.board.get_cell(0, 2)
-        assert cell.is_empty
-        assert {2, 4} == cell.candidates
-
-    def test_cant_reduce_candidates(self):
-        matrix = self.make_matrix('''
-            3 _ _ 2
-            _ 2 3 _
-            _ 3 2 _
-            2 _ _ 3''')
-        expected = self.make_matrix('''
-            3 _ _ 2
-            _ 2 3 _
-            _ 3 2 _
-            2 _ _ 3''')
-        self.init_solver(matrix)
-        self.solver.reset_candidates()
-        assert not self.solver.reduce_candidates()
-        assert expected == self.solver.board.matrix
-
-
-    def test_reduce_candidates_raises_no_solution(self):
-        matrix = self.make_matrix('''
-            3 4 1 2
-            _ 2 3 4
-            2 4 2 4
-            1 3 4 3''')
-        self.init_solver(matrix)
-        self.solver.reset_candidates()
-        self.assertRaises(NoSolutionError, self.solver.reduce_candidates)
-
-    def test_solved(self):
-        matrix = self.make_matrix('''
-            3 4 1 2
-            1 2 3 4
-            4 3 2 1
-            2 1 4 3''')
-        self.init_solver(matrix)
-        assert self.solver.solved()
-        matrix = self.make_matrix('''
-            _ 4 1 2
-            1 2 3 4
-            4 3 2 1
-            2 1 4 3''')
-        self.init_solver(matrix)
-        assert not self.solver.solved()
+        cell = solution.get_cell(0, 2)
+        assert 4 == cell
 
     def test_solve_simple_one_cycle(self):
         matrix = self.make_matrix('''
@@ -227,15 +155,15 @@ class TestBacktrackingSolver(TestCase):
             _ 2 3 _
             _ 3 2 1
             2 1 4 3''')
-        solution = self.make_matrix('''
+        expected = self.make_matrix('''
             3 4 1 2
             1 2 3 4
             4 3 2 1
             2 1 4 3''')
         self.init_solver(matrix)
-        solved_board = self.solver.solve()
-        assert self.solver.solved()
-        assert solution == solved_board.matrix
+        solution = next(self.solver.solve(self.puzzle))
+        assert is_solved(solution)
+        assert expected == solution.matrix
 
     def test_solve_simple_two_cycles(self):
         matrix = self.make_matrix('''
@@ -243,15 +171,15 @@ class TestBacktrackingSolver(TestCase):
             _ 2 3 _
             _ 3 2 1
             2 1 4 3''')
-        solution = self.make_matrix('''
+        expected = self.make_matrix('''
             3 4 1 2
             1 2 3 4
             4 3 2 1
             2 1 4 3''')
         self.init_solver(matrix)
-        solved_board = self.solver.solve()
-        assert self.solver.solved()
-        assert solution == solved_board.matrix
+        solution = next(self.solver.solve(self.puzzle))
+        assert is_solved(solution)
+        assert expected == solution.matrix
 
     def test_solve_with_iteration(self):
         matrix = self.make_matrix('''
@@ -271,9 +199,9 @@ class TestBacktrackingSolver(TestCase):
             2 4 1 3''')
 
         self.init_solver(matrix)
-        solved_board = self.solver.solve()
-        assert self.solver.solved()
-        assert solved_board.matrix in [solution1, solution2]
+        solution = next(self.solver.solve(self.puzzle))
+        assert is_solved(solution)
+        assert solution.matrix in [solution1, solution2]
 
     def test_solve_many_iterations(self):
         matrix = self.make_matrix('''
@@ -283,8 +211,8 @@ class TestBacktrackingSolver(TestCase):
             _ _ _ 3''')
 
         self.init_solver(matrix)
-        self.solver.solve()
-        assert self.solver.solved()
+        solution = next(self.solver.solve(self.puzzle))
+        assert is_solved(solution)
 
     def test_solve_many_iterations3x3(self):
         matrix = self.make_matrix('''
@@ -297,10 +225,13 @@ class TestBacktrackingSolver(TestCase):
             _ _ _ _ _ _ _ _ _
             _ _ _ _ _ _ _ _ _
             _ _ _ _ _ _ _ _ 3''')
-
         self.init_solver(matrix)
-        self.solver.solve()
-        assert self.solver.solved()
+        iterator = iter(self.solver.solve(self.puzzle))
+        solution1 = next(iterator)
+        assert is_solved(solution1)
+        solution2 = next(iterator)
+        assert is_solved(solution2)
+        assert solution1.matrix != solution2.matrix
 
 
 class TestTextParser(TestCase):

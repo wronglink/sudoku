@@ -1,8 +1,8 @@
 import argparse
 import os.path
 from sudoku.rules import RuleHandler
-from sudoku.solver import NoSolutionError, BacktrackingSolver
-from sudoku.parsers import PARSER_FILE_EXT_MAPPING, ParseError
+from sudoku.solvers import BacktrackingSolver
+from sudoku.parsers import PARSER_FILE_EXT_MAPPING, ParseError, TextParser
 
 parser = argparse.ArgumentParser(description='Console Sudoku solver')
 
@@ -26,30 +26,31 @@ if __name__ == '__main__':
 
     infile_parser = PARSER_FILE_EXT_MAPPING[infile_ext]()
     outfile_parser = PARSER_FILE_EXT_MAPPING[outfile_ext]()
+    text_parser = TextParser()
 
     try:
-        board = infile_parser.loads(args.infile.read())
+        puzzle = infile_parser.loads(args.infile.read())
     except ParseError as e:
         print(e)
         exit(1)
 
-    rule_handler = RuleHandler()
-    solver = BacktrackingSolver(board, rule_handler)
+    rules = RuleHandler()
+    solver = BacktrackingSolver(rules)
 
     if args.display:
         print('Puzzle:')
-        print(board.display())
+        print(text_parser.dumps(puzzle))
 
     try:
-        solved_board = solver.solve()
-    except NoSolutionError as e:
+        solution = next(solver.solve(puzzle))
+    except StopIteration:
         print('No solution could be found.')
         exit(2)
 
     if args.display:
         print('Solution:')
-        print(solved_board.display())
+        print(text_parser.dumps(solution))
     else:
         print('Puzzle solved.')
 
-    args.outfile.write(outfile_parser.dumps(solved_board))
+    args.outfile.write(outfile_parser.dumps(solution))

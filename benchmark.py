@@ -10,7 +10,7 @@ py.test -v benchmark.py
 import pytest
 from sudoku.board import Board
 from sudoku.rules import RuleHandler
-from sudoku.solver import BacktrackingSolver
+from sudoku.solvers import BacktrackingSolver
 
 
 matrixes = []
@@ -21,18 +21,15 @@ with open('data/problems.txt') as f:
 
 
 @pytest.fixture(params=matrixes)
-def matrix(request):
-    return request.param
-
+def board(request):
+    return Board(request.param)
 
 @pytest.fixture
-def solver(matrix):
-    board = Board(matrix)
-    rule_handler = RuleHandler()
-    return BacktrackingSolver(board, rule_handler)
+def solver():
+    return BacktrackingSolver(RuleHandler())
 
 
 @pytest.mark.benchmark
-def test_solver(solver):
-    solver.solve()
-    assert solver.solved()
+def test_solver(board, solver):
+    solution = next(solver.solve(board))
+    assert all(not cell.is_empty for cell in solution)
